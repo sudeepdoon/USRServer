@@ -28,6 +28,12 @@ switch($view){
 		$dailyThoughtRestHandler = new DailyThoughtRestHandler();
 		$dailyThoughtRestHandler->getAllMonths($_GET["year"]);
 		break;
+		
+	case "dates":
+		// to handle REST Url /mobile/years/
+		$dailyThoughtRestHandler = new DailyThoughtRestHandler();
+		$dailyThoughtRestHandler->getDailyThoughts($_GET["year"], $_GET["month"]);
+		break;
 			
 /*	case "single":
 		// to handle REST Url /mobile/show/<id>/

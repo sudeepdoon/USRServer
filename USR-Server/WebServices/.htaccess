@@ -6,3 +6,4 @@ RewriteEngine on
 RewriteRule ^dailyThoughts/list/$   DailyThoughtController.php?view=all [nc,qsa]
 RewriteRule ^dailyThoughts/years/$   DailyThoughtController.php?view=years [nc,qsa]
 RewriteRule ^dailyThoughts/months/([0-9]+)/$   DailyThoughtController.php?view=months&year=$1 [nc,qsa]
+RewriteRule ^dailyThoughts/dates/([0-9]+)/([0-9]+)/$   DailyThoughtController.php?view=dates&year=$1&month=$2 [nc,qsa]
