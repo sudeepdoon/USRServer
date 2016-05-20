@@ -38,10 +38,33 @@ Class DailyThoughts {
 				$rowArray["url"] = $row['TFTD_URL'];
 				$returnArray[] = $rowArray;
     		}
-		mysql_free_result($result);    	
 		}
-
+		
+		mysql_free_result($result);
+		
 		return $returnArray; 
+	}
+	
+	public function getAllYears(){
+		if(! $this->con){
+			$this->connectDatabase();
+		}
+		
+		$SQL = "SELECT DISTINCT TFTD_YEAR FROM TFTD_INDEX ORDER BY TFTD_YEAR DESC";
+		$result = mysql_query($SQL) or die(mysql_error());
+		
+		$returnArray = array();
+		
+		if ($result) {
+			while($row = mysql_fetch_assoc($result)) {
+				$rowArray = array();
+				$rowArray["name"] = $row['TFTD_YEAR'];
+				$returnArray[] = $rowArray;
+			}
+		}
+		mysql_free_result($result);
+		
+		return $returnArray;
 	}
 }
 

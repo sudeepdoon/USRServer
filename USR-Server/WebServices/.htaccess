@@ -4,3 +4,4 @@ RewriteEngine on
 
 # map neat URL to internal URL
 RewriteRule ^dailyThoughts/list/$   DailyThoughtController.php?view=all [nc,qsa]
+RewriteRule ^dailyThoughts/years/$   DailyThoughtController.php?view=years [nc,qsa]
