@@ -7,6 +7,8 @@ Class DailyThoughts {
 	private $password = "";
 	private $dbname = "USR";
 	private $con;
+	
+	private $monthNames = array("1"=>"January", "2"=>"February","3"=>"March","4"=>"April","5"=>"May","6"=>"June","7"=>"July","8"=>"August","9"=>"September","10"=>"October","11"=>"November","12"=>"December");
 
 	function connectDatabase(){
 		$this->con = mysql_connect($this->servername, $this->username, $this->password) or  die("Could not connect: " . mysql_error()); 
@@ -58,12 +60,37 @@ Class DailyThoughts {
 		if ($result) {
 			while($row = mysql_fetch_assoc($result)) {
 				$rowArray = array();
+				$rowArray["id"] = $row['TFTD_YEAR'];
 				$rowArray["name"] = $row['TFTD_YEAR'];
 				$returnArray[] = $rowArray;
 			}
 		}
 		mysql_free_result($result);
 		
+		return $returnArray;
+	}
+	
+	public function getAllMonths($year){
+		if(! $this->con){
+			$this->connectDatabase();
+		}
+	
+		$SQL = "SELECT DISTINCT TFTD_MONTH FROM TFTD_INDEX WHERE TFTD_YEAR = ".$year." ORDER BY TFTD_MONTH DESC";
+		
+		$result = mysql_query($SQL) or die(mysql_error());
+	
+		$returnArray = array();
+	
+		if ($result) {
+			while($row = mysql_fetch_assoc($result)) {
+				$rowArray = array();
+				$rowArray["id"] = $row['TFTD_MONTH'];
+				$rowArray["name"] = $this->monthNames[$row['TFTD_MONTH']];
+				$returnArray[] = $rowArray;
+			}
+		}
+		mysql_free_result($result);
+	
 		return $returnArray;
 	}
 }
