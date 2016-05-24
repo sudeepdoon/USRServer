@@ -9,14 +9,14 @@ class DatabaseServices {
 	private $dbname = "USR";
 	private $con;
 
-	function connectDatabase(){
+	public function connectDatabase(){
 		$this->con = mysql_connect($this->servername, $this->username, $this->password) or
 		die("Could not connect: " . mysql_error());
 		
 		mysql_select_db($this->dbname);
 	}
 	
-	function closeDatabase(){
+	public function closeDatabase(){
 		mysql_close($this->con);
 	}
 	
@@ -43,11 +43,12 @@ class DatabaseServices {
 				"FROM TFTD_INDEX_STAGING TIS LEFT OUTER JOIN TFTD_INDEX TI ".
 				"ON TIS.TFTD_YEAR = TI.TFTD_YEAR AND ".
 					"TIS.TFTD_MONTH = TI.TFTD_MONTH AND ".
-					"TIS.TFTD_DATE = TI.TFTD_DATE AND ".
-					"TI.IS_DELETED = FALSE ".
-				"WHERE TI.TFTD_YEAR IS NULL AND ".
+					"TIS.TFTD_DATE = TI.TFTD_DATE ".
+				"WHERE (TI.TFTD_YEAR IS NULL AND ".
 					"TI.TFTD_MONTH IS NULL AND ".
-					"TI.TFTD_DATE IS NULL";
+					"TI.TFTD_DATE IS NULL AND ".
+					"TI.IS_DELETED IS NULL) ".
+					"OR (TI.IS_DELETED = TRUE)";
 		
 		mysql_query($SQL) or die(mysql_error());
 		
@@ -104,16 +105,28 @@ class DatabaseServices {
 
 	
 	public function syncDailyThoughts($dailyThougts){
-		$this->connectDatabase();
-		
 		$this->clearStaging();
 		$this->createStaging($dailyThougts);
 		
 		$this->insertNewDailyThoughts();
 		$this->updateExistingDailyThoughts();
 		$this->deleteNonExistingDailyThoughts();
+	}
+	
+	public function getDailyThoughtExceptionURL($year, $month){
+		$URL = "";
+		$SQL = "SELECT TME.TFTD_URL AS TFTD_URL FROM TFTD_MONTHLYINDEX_EXCEPTIONS TME WHERE TME.EXCEPTION_YEAR = ".$year." AND TME.EXCEPTION_MONTH = ".$month;
 		
-		$this->closeDatabase();
+		$result = mysql_query($SQL) or die(mysql_error());
+		
+		if($result){
+			$row = mysql_fetch_assoc($result);
+			$URL = $row['TFTD_URL'];
+		}
+		
+		mysql_free_result($result);
+		
+		return $URL;
 	}
 
 }

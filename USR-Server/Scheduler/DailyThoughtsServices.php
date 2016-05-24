@@ -1,8 +1,12 @@
 <?php
 
+require_once("DatabaseServices.php");
 include './simple_html_dom.php';
 
+
 class DailyThoughtServices {
+	
+	private $databaseServices;
 	
 	public function readDailyThoughts(){
 		$html = file_get_html('http://www.sda-archives.com/tftd/tftd/index.html');
@@ -65,15 +69,17 @@ class DailyThoughtServices {
 							"7" => "jul", "8" => "aug", "9" =>  "sept", 
 							"10" => "oct", "11" => "nov", "12" => "dec"); 
 		
+		if($this->databaseServices == null)
+			$this->databaseServices = new DatabaseServices();
 		
-		$link = "http://www.sda-archives.com/tftd/tftd/".$year."/".$monthLinks[$month]."/index.html";
+		$exceptionURL = $this->databaseServices->getDailyThoughtExceptionURL($year, $month);
 		
-		//Check for exceptions to the naming convention.
-		if($year == "2011" AND $month == "7") $link = "http://www.sda-archives.com/tftd/tftd/2011/july/index.html";
-		if($year == "2012" AND $month == "7") $link = "http://www.sda-archives.com/tftd/tftd/2012/july/index.html";
-		if($year == "2013" AND $month == "8") $link = "http://www.sda-archives.com/tftd/tftd/2013/sep/index.html";
-		if($year == "2014" AND $month == "8") $link = "http://www.sda-archives.com/tftd/tftd/2014/sep/index.html";
-		if($year == "2015" AND $month == "8") $link = "http://www.sda-archives.com/tftd/tftd/2015/sep/index.html";
+		if($exceptionURL != ""){
+			$link = $exceptionURL;
+		}
+		else{
+			$link = "http://www.sda-archives.com/tftd/tftd/".$year."/".$monthLinks[$month]."/index.html";
+		}
 		
 		return $link;
 		
