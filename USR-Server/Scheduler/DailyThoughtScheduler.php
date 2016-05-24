@@ -14,8 +14,6 @@ function run(){
 	$dailyThought = new DailyThought();
 	$dailyThougts = $dailyThought->toObjectArray($tftdArray);
 	
-	print_r($dailyThougts);
-	
 	$databaseServices = new DatabaseServices();
 	$databaseServices->syncDailyThoughts($dailyThougts);
 }

@@ -16,6 +16,10 @@ class DatabaseServices {
 		mysql_select_db($this->dbname);
 	}
 	
+	function closeDatabase(){
+		mysql_close($this->con);
+	}
+	
 	function clearStaging(){
 		$SQL = "DELETE FROM TFTD_INDEX_STAGING";
 		mysql_query($SQL) or die(mysql_error());
@@ -33,11 +37,83 @@ class DatabaseServices {
 		}
 	}
 	
+	function insertNewDailyThoughts(){
+		$SQL = "INSERT INTO TFTD_INDEX (TFTD_YEAR, TFTD_MONTH, TFTD_DATE, TFTD_TITLE, TFTD_URL) ".
+				"SELECT TIS.TFTD_YEAR as TFTD_YEAR, TIS.TFTD_MONTH as TFTD_MONTH, TIS.TFTD_DATE as TFTD_DATE, TIS.TFTD_TITLE as TFTD_TITLE, TIS.TFTD_URL as TFTD_URL ".
+				"FROM TFTD_INDEX_STAGING TIS LEFT OUTER JOIN TFTD_INDEX TI ".
+				"ON TIS.TFTD_YEAR = TI.TFTD_YEAR AND ".
+					"TIS.TFTD_MONTH = TI.TFTD_MONTH AND ".
+					"TIS.TFTD_DATE = TI.TFTD_DATE AND ".
+					"TI.IS_DELETED = FALSE ".
+				"WHERE TI.TFTD_YEAR IS NULL AND ".
+					"TI.TFTD_MONTH IS NULL AND ".
+					"TI.TFTD_DATE IS NULL";
+		
+		mysql_query($SQL) or die(mysql_error());
+		
+	}
+	
+	function updateExistingDailyThoughts(){
+		
+		$SQL = "UPDATE TFTD_INDEX TI INNER JOIN ".
+			"( ".
+				"SELECT TI.TFTD_YEAR as TFTD_YEAR, TI.TFTD_MONTH as TFTD_MONTH, TI.TFTD_DATE as TFTD_DATE, TI.TFTD_TITLE AS OLD_TITLE, TIS.TFTD_TITLE AS NEW_TITLE, TI.TFTD_URL AS OLD_URL, TIS.TFTD_URL AS NEW_URL ".
+				"FROM  TFTD_INDEX TI INNER JOIN TFTD_INDEX_STAGING TIS ".
+				"ON ".
+					"TIS.TFTD_YEAR = TI.TFTD_YEAR AND ".
+					"TIS.TFTD_MONTH = TI.TFTD_MONTH AND ".
+					"TIS.TFTD_DATE = TI.TFTD_DATE ".
+				"WHERE ".
+					"(TIS.TFTD_TITLE != TI.TFTD_TITLE OR TIS.TFTD_URL != TI.TFTD_URL) AND ".
+					"TI.TFTD_IS_MANUAL = FALSE AND ".
+					"TI.IS_DELETED = FALSE ".
+				") C ".
+				"ON TI.TFTD_YEAR = C.TFTD_YEAR AND ".
+					"TI.TFTD_MONTH = C.TFTD_MONTH AND ".
+					"TI.TFTD_DATE = C.TFTD_DATE ".
+				"SET ".
+					"TI.TFTD_TITLE = C.NEW_TITLE, ".
+					"TI.TFTD_URL = C.NEW_URL ";
+		
+		mysql_query($SQL) or die(mysql_error());
+		
+	}
+	
+	function deleteNonExistingDailyThoughts(){
+		$SQL = "UPDATE TFTD_INDEX TI INNER JOIN ".
+				"( ".
+					"SELECT TI.TFTD_YEAR as TFTD_YEAR, TI.TFTD_MONTH as TFTD_MONTH, TI.TFTD_DATE as TFTD_DATE ".
+					"FROM  TFTD_INDEX TI LEFT OUTER JOIN TFTD_INDEX_STAGING TIS ".
+ 					"ON TIS.TFTD_YEAR = TI.TFTD_YEAR AND ".
+ 						"TIS.TFTD_MONTH = TI.TFTD_MONTH AND ".
+  						"TIS.TFTD_DATE = TI.TFTD_DATE ".
+					"WHERE TIS.TFTD_YEAR IS NULL AND ".
+  						"TIS.TFTD_MONTH IS NULL AND ".
+ 						"TIS.TFTD_DATE IS NULL AND ".
+  						"TI.TFTD_IS_MANUAL = FALSE AND ".
+ 						"TI.IS_DELETED = FALSE ".
+				") C ".
+				"ON TI.TFTD_YEAR = C.TFTD_YEAR AND ".
+ 				"TI.TFTD_MONTH = C.TFTD_MONTH AND ".
+ 				"TI.TFTD_DATE = C.TFTD_DATE ".
+				"SET ".
+  					"TI.IS_DELETED = TRUE";
+		
+		mysql_query($SQL) or die(mysql_error());
+	}
+
+	
 	public function syncDailyThoughts($dailyThougts){
 		$this->connectDatabase();
 		
 		$this->clearStaging();
 		$this->createStaging($dailyThougts);
+		
+		$this->insertNewDailyThoughts();
+		$this->updateExistingDailyThoughts();
+		$this->deleteNonExistingDailyThoughts();
+		
+		$this->closeDatabase();
 	}
 
 }

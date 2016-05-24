@@ -136,8 +136,6 @@ class DailyThoughtServices {
 			echo "There was some error while reading monthly index from: ".$link;
 		}
 		
-		//if($str!="" AND ord($str) != 38){
-		
 		ksort($monthIndex);
 		
 		return $monthIndex;
