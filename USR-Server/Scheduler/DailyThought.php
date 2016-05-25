@@ -7,7 +7,7 @@ class DailyThought {
 	private $title;
 	private $url;
 	
-	public function __construct($year,$month,$date,$title,$url){
+	public function setValues($year,$month,$date,$title,$url){
 		$this->year = $year;
 		$this->month = $month;
 		$this->date = $date;
@@ -40,7 +40,30 @@ class DailyThought {
 	}
 	
 	function createURL($year,$month,$date){
-		return 'Test';
+		$monthLinks = array("1" => "jan", "2" => "feb", "3" => "mar",
+				"4" => "apr", "5" => "may", "6" => "jun",
+				"7" => "jul", "8" => "aug", "9" =>  "sept",
+				"10" => "oct", "11" => "nov", "12" => "dec");
+		
+		$yy = substr($year,-2);
+		
+		$mm = "";
+		if(intval($month) < 10){
+			$mm = "0".$month;
+		}else{
+			$mm = $month;
+		}
+		
+		$dd = "";
+		if(intval($date) < 10){
+			$dd = "0".$date;
+		}else{
+			$dd = $date;
+		}		
+		
+		$link = "http://www.sda-archives.com/tftd/tftd/".$year."/".$monthLinks[$month]."/tftd_".$mm.$dd.$yy.".html";
+		
+		return $link;
 	}
 	
 	public function toObjectArray($tftdArray){
@@ -50,7 +73,8 @@ class DailyThought {
 			foreach($monthArray as $month => $dateArray){
 				foreach ($dateArray as $date => $title){
 					$url = $this->createURL($year, $month, $date);
-					$dailyThought = new DailyThought($year, $month, $date, $title, $url);
+					$dailyThought = new DailyThought();
+					$dailyThought->setValues($year, $month, $date, $title, $url);
 					
 					$dailyThougts[] = $dailyThought;
 					}
