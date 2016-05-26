@@ -78,7 +78,8 @@ class DatabaseServices {
 					"TI.TFTD_DATE = C.TFTD_DATE ".
 				"SET ".
 					"TI.TFTD_TITLE = C.NEW_TITLE, ".
-					"TI.TFTD_URL = C.NEW_URL ";
+					"TI.TFTD_URL = C.NEW_URL, ".
+					"TI.LAST_UPDATED = CURRENT_TIMESTAMP ";
 		
 		mysql_query($SQL) or die(LoggerService::error("Error updateExistingDailyThoughts: ".mysql_error()));
 		LoggerService::info("Updated existing Daily Thoughts: ".mysql_affected_rows());
@@ -102,7 +103,8 @@ class DatabaseServices {
  				"TI.TFTD_MONTH = C.TFTD_MONTH AND ".
  				"TI.TFTD_DATE = C.TFTD_DATE ".
 				"SET ".
-  					"TI.IS_DELETED = TRUE";
+  					"TI.IS_DELETED = TRUE, ".
+					"TI.LAST_UPDATED = CURRENT_TIMESTAMP ";
 		
 		mysql_query($SQL) or die(LoggerService::error("Error deleteNonExistingDailyThoughts: ". mysql_error()));
 		LoggerService::info("Delelted Daily Thoughts: ".mysql_affected_rows());
