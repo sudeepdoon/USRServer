@@ -1,6 +1,8 @@
 <?php
 
 require_once("DatabaseServices.php");
+require_once("Logger.php");
+
 include './simple_html_dom.php';
 
 
@@ -76,6 +78,7 @@ class DailyThoughtServices {
 		
 		if($exceptionURL != ""){
 			$link = $exceptionURL;
+			LoggerService::info("Using exception URL: ".$link);
 		}
 		else{
 			$link = "http://www.sda-archives.com/tftd/tftd/".$year."/".$monthLinks[$month]."/index.html";
@@ -103,7 +106,7 @@ class DailyThoughtServices {
 		$html = file_get_html($link);
 
 		if($html == null){
-			echo("Could not open link: "+$link);
+			LoggerService::error("Could not open link: ".$link);
 			return $monthIndex;
 		}
 		
@@ -138,8 +141,7 @@ class DailyThoughtServices {
 			}
 			
 		}else{
-			//TODO: Add as a logger; also log the two arrays
-			echo "There was some error while reading monthly index from: ".$link;
+			LoggerService::error("There was some error while reading monthly index from: ".$link);
 		}
 		
 		ksort($monthIndex);

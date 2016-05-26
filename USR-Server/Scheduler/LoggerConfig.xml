@@ -1,0 +1,22 @@
+<configuration xmlns="http://logging.apache.org/log4php/">
+    
+    <appender name="myConsoleAppender" class="LoggerAppenderConsole" />
+    
+    <appender name="default" class="LoggerAppenderFile">
+    <param name="file" value="d:/Scheduler.log" />
+        <layout class="LoggerLayoutPattern">
+            <param name="conversionPattern" value="%date %logger %-5level %msg%n" />
+        </layout>
+    </appender>
+    
+    <logger name="myLogger">
+    	<level value="INFO" />
+        <appender_ref ref="default" />
+    </logger>
+    
+    <root>
+   		 <level value="INFO" />
+        <appender_ref ref="myConsoleAppender" />
+    </root>
+</configuration>
+

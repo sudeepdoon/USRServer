@@ -1,5 +1,6 @@
 <?php
 require_once("DailyThought.php");
+require_once("Logger.php");
 
 class DatabaseServices {
 	
@@ -11,7 +12,7 @@ class DatabaseServices {
 
 	public function connectDatabase(){
 		$this->con = mysql_connect($this->servername, $this->username, $this->password) or
-		die("Could not connect: " . mysql_error());
+		die(LoggerService::error("Could not connect to database: " . mysql_error()));
 		
 		mysql_select_db($this->dbname);
 	}
@@ -22,7 +23,8 @@ class DatabaseServices {
 	
 	function clearStaging(){
 		$SQL = "DELETE FROM TFTD_INDEX_STAGING";
-		mysql_query($SQL) or die(mysql_error());
+		mysql_query($SQL) or die(LoggerService::error("Error while deleting Staging: ".mysql_error()));
+		LoggerService::info("Deleted from Statging");
 	}
 	
 	function createStaging($dailyThougts){
@@ -33,8 +35,9 @@ class DatabaseServices {
 				$dailyThought->getYear().",".$dailyThought->getMonth().",".$dailyThought->getDate().",'".
 				str_replace("'", "''", $dailyThought->getTitle())."','".$dailyThought->getURL()."')";
 			
-			mysql_query($SQL) or die(mysql_error());
+			mysql_query($SQL) or die(LoggerService::error($SQL." : ".mysql_error()));
 		}
+		LoggerService::info("Inserted into Statging");
 	}
 	
 	function insertNewDailyThoughts(){
@@ -50,7 +53,8 @@ class DatabaseServices {
 					"TI.IS_DELETED IS NULL) ".
 					"OR (TI.IS_DELETED = TRUE)";
 		
-		mysql_query($SQL) or die(mysql_error());
+		mysql_query($SQL) or die(LoggerService::error("Error insertNewDailyThoughts: ".mysql_error()));
+		LoggerService::info("New Daily Thoughts Inserted: ".mysql_affected_rows());
 		
 	}
 	
@@ -76,8 +80,8 @@ class DatabaseServices {
 					"TI.TFTD_TITLE = C.NEW_TITLE, ".
 					"TI.TFTD_URL = C.NEW_URL ";
 		
-		mysql_query($SQL) or die(mysql_error());
-		
+		mysql_query($SQL) or die(LoggerService::error("Error updateExistingDailyThoughts: ".mysql_error()));
+		LoggerService::info("Updated existing Daily Thoughts: ".mysql_affected_rows());
 	}
 	
 	function deleteNonExistingDailyThoughts(){
@@ -100,7 +104,8 @@ class DatabaseServices {
 				"SET ".
   					"TI.IS_DELETED = TRUE";
 		
-		mysql_query($SQL) or die(mysql_error());
+		mysql_query($SQL) or die(LoggerService::error("Error deleteNonExistingDailyThoughts: ". mysql_error()));
+		LoggerService::info("Delelted Daily Thoughts: ".mysql_affected_rows());
 	}
 
 	
@@ -117,7 +122,7 @@ class DatabaseServices {
 		$URL = "";
 		$SQL = "SELECT TME.TFTD_URL AS TFTD_URL FROM TFTD_MONTHLYINDEX_EXCEPTIONS TME WHERE TME.EXCEPTION_YEAR = ".$year." AND TME.EXCEPTION_MONTH = ".$month;
 		
-		$result = mysql_query($SQL) or die(mysql_error());
+		$result = mysql_query($SQL) or die(LoggerService::error("Error getDailyThoughtExceptionURL: ".mysql_error()));
 		
 		if($result){
 			$row = mysql_fetch_assoc($result);
