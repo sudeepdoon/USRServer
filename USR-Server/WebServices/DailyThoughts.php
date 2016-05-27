@@ -24,7 +24,7 @@ Class DailyThoughts {
 			$this->connectDatabase();
 		}
 
-		$SQL = "SELECT TFTD_YEAR, TFTD_MONTH, TFTD_DATE, TFTD_TITLE, TFTD_URL FROM TFTD_INDEX ORDER BY TFTD_YEAR DESC, TFTD_MONTH DESC, TFTD_DATE DESC";
+		$SQL = "SELECT TFTD_YEAR, TFTD_MONTH, TFTD_DATE, TFTD_TITLE, TFTD_URL FROM TFTD_INDEX WHERE IS_DELETED <> TRUE ORDER BY TFTD_YEAR DESC, TFTD_MONTH DESC, TFTD_DATE DESC";
 		$result = mysql_query($SQL) or die(mysql_error());
 
 		$returnArray = array();
@@ -75,7 +75,7 @@ Class DailyThoughts {
 			$this->connectDatabase();
 		}
 	
-		$SQL = "SELECT DISTINCT TFTD_MONTH FROM TFTD_INDEX WHERE TFTD_YEAR = ".$year." ORDER BY TFTD_MONTH DESC";
+		$SQL = "SELECT DISTINCT TFTD_MONTH FROM TFTD_INDEX WHERE IS_DELETED <> TRUE AND TFTD_YEAR = ".$year." ORDER BY TFTD_MONTH DESC";
 		
 		$result = mysql_query($SQL) or die(mysql_error());
 	
@@ -99,7 +99,7 @@ Class DailyThoughts {
 			$this->connectDatabase();
 		}
 	
-		$SQL = "SELECT TFTD_YEAR, TFTD_MONTH, TFTD_DATE, TFTD_TITLE, TFTD_URL FROM TFTD_INDEX WHERE TFTD_YEAR = ".$year." AND TFTD_MONTH = ".$month." ORDER BY TFTD_DATE DESC";
+		$SQL = "SELECT TFTD_YEAR, TFTD_MONTH, TFTD_DATE, TFTD_TITLE, TFTD_URL FROM TFTD_INDEX WHERE IS_DELETED <> TRUE AND TFTD_YEAR = ".$year." AND TFTD_MONTH = ".$month." ORDER BY TFTD_DATE DESC";
 		$result = mysql_query($SQL) or die(mysql_error());
 	
 		$returnArray = array();
