@@ -8,7 +8,7 @@ set_time_limit(200);
 run();
 
 function run(){
-	LoggerService::info("Starting the scheduler");
+	LoggerService::info("Starting the Daily Thought scheduler");
 	
 	$databaseServices = new DatabaseServices();
 	$databaseServices->connectDatabase();

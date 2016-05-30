@@ -10,6 +10,7 @@ class DatabaseServices {
 	private $dbname = "USR";
 	private $con;
 
+	//--------------------------------------------- Servcies for Database Connection ----------------------------------------
 	public function connectDatabase(){
 		$this->con = mysql_connect($this->servername, $this->username, $this->password) or
 		die(LoggerService::error("Could not connect to database: " . mysql_error()));
@@ -21,15 +22,15 @@ class DatabaseServices {
 		mysql_close($this->con);
 	}
 	
-	function clearStaging(){
+	
+	//----------------------------------------------- Services for Daily Thoughts -------------------------------------------
+	function clearDailyThoughtsStaging(){
 		$SQL = "DELETE FROM TFTD_INDEX_STAGING";
 		mysql_query($SQL) or die(LoggerService::error("Error while deleting Staging: ".mysql_error()));
 		LoggerService::info("Deleted from Statging");
 	}
 	
-	function createStaging($dailyThougts){
-		$this->clearStaging();
-		
+	function createDailyThoughtsStaging($dailyThougts){
 		foreach ($dailyThougts as $key=>$dailyThought){
 			$SQL = "INSERT INTO TFTD_INDEX_STAGING (TFTD_YEAR, TFTD_MONTH, TFTD_DATE, TFTD_TITLE, TFTD_URL) VALUES (".
 				$dailyThought->getYear().",".$dailyThought->getMonth().",".$dailyThought->getDate().",'".
@@ -112,8 +113,8 @@ class DatabaseServices {
 
 	
 	public function syncDailyThoughts($dailyThougts){
-		$this->clearStaging();
-		$this->createStaging($dailyThougts);
+		$this->clearDailyThoughtsStaging();
+		$this->createDailyThoughtsStaging($dailyThougts);
 		
 		$this->insertNewDailyThoughts();
 		$this->updateExistingDailyThoughts();
@@ -136,5 +137,52 @@ class DatabaseServices {
 		return $URL;
 	}
 
+	//---------------------------------------- Servcies for Weekly Lessons --------------------------------
+	
+	public function getWeeklySeriesIndex(){
+		$SQL = "SELECT WL_SERIES_ID AS SERIES_ID, WL_TITLE AS TITLE, WL_INDEX_URL AS URL, WL_URL_PREFIX AS PREFIX FROM WEEKLY_SERIES_INDEX";
+		$weeklySeriesIndex = array();
+		
+		$result = mysql_query($SQL) or die(LoggerService::error("Error getWeeklySeriesIndex: ".mysql_error()));
+		
+		if($result){
+			while($row = mysql_fetch_assoc($result)){
+				$innerArray = array();
+				$innerArray["SERIES_ID"] = $row["SERIES_ID"];
+				$innerArray["TITLE"] = $row["TITLE"];
+				$innerArray["URL"] = $row["URL"]; 
+				$innerArray["PREFIX"] = $row["PREFIX"];
+				
+				$weeklySeriesIndex[$row["SERIES_ID"]] = $innerArray;
+			}
+		}else{
+			LoggerService::debug("No result in getWeeklySeriesIndex");
+		}
+		
+		return $weeklySeriesIndex;
+	}
+	
+	public function syncWeeklyLessons($weeklyLessons){
+		$this->clearWeeklyLessonStaging();
+		$this->createWeeklyLessonStaging($weeklyLessons);
+		
+	}
+	
+	function clearWeeklyLessonStaging(){
+		$SQL = "DELETE FROM WL_INDEX_STAGING";
+		mysql_query($SQL) or die(LoggerService::error("Error while deleting Staging: ".mysql_error()));
+		LoggerService::info("Deleted from Statging");
+	}
+	
+	function createWeeklyLessonStaging($weeklyLessons){
+		foreach($weeklyLessons as $key => $weeklyLesson){
+			$SQL = "INSERT INTO WL_INDEX_STAGING (WL_SERIES_ID, WL_CODE, WL_TITLE, WL_URL) VALUES (".$weeklyLesson->getSeries().",'".
+			$weeklyLesson->getLessonCode()."','".str_replace("'", "''",$weeklyLesson->getTitle())."','".$weeklyLesson->getURL()."')";
+			
+			mysql_query($SQL) or die(LoggerService::error($SQL." : ".mysql_error()));
+		}
+		LoggerService::info("Inserted into Statging");
+		
+	}
 }
 ?>
