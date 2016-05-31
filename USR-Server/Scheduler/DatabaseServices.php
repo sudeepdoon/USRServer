@@ -166,6 +166,9 @@ class DatabaseServices {
 		$this->clearWeeklyLessonStaging();
 		$this->createWeeklyLessonStaging($weeklyLessons);
 		
+		$this->insertNewWeeklyLessons();
+		$this->updateExistingWeeklyLessons();
+		$this->deleteNonExistingWeeklyLessons();
 	}
 	
 	function clearWeeklyLessonStaging(){
@@ -183,6 +186,68 @@ class DatabaseServices {
 		}
 		LoggerService::info("Inserted into Statging");
 		
+	}
+	
+	function insertNewWeeklyLessons(){
+		$SQL = "INSERT INTO WL_INDEX (WL_SERIES_ID, WL_CODE, WL_TITLE, WL_URL) ".      
+				  "SELECT WIS.WL_SERIES_ID AS SERIES_ID, WIS.WL_CODE AS CODE, WIS.WL_TITLE AS TITLE, WIS.WL_URL AS URL ".
+				  "FROM WL_INDEX_STAGING WIS LEFT OUTER JOIN WL_INDEX WI ".
+				  "ON WIS.WL_SERIES_ID = WI.WL_SERIES_ID AND ".
+				    "WIS.WL_CODE = WI.WL_CODE ".
+				  "WHERE ".
+				    "(WI.WL_TITLE IS NULL AND ".
+				    "WI.WL_URL IS NULL AND ".
+				    "WI.IS_DELETED IS NULL) ".
+				    "OR (WI.IS_DELETED = TRUE)";
+		
+		mysql_query($SQL) or die(LoggerService::error("Error insertNewWeeklyLessons: ".mysql_error()));
+		LoggerService::info("New Weekly Lessons Inserted: ".mysql_affected_rows());
+	}
+	
+	function updateExistingWeeklyLessons(){
+		$SQL = "UPDATE WL_INDEX WI INNER JOIN ".
+				"( ".
+				  "SELECT WI.WL_SERIES_ID AS SERIES_ID, WI.WL_CODE AS CODE, WI.WL_TITLE AS OLD_TITLE, WIS.WL_TITLE AS NEW_TITLE, WI.WL_URL AS OLD_URL, WIS.WL_URL AS NEW_URL ". 
+				  "FROM WL_INDEX WI INNER JOIN WL_INDEX_STAGING WIS ".
+				  "ON ".
+				    "WI.WL_SERIES_ID = WIS.WL_SERIES_ID AND ".
+				    "WI.WL_CODE = WIS.WL_CODE ".
+				  "WHERE ".
+				    "(WIS.WL_TITLE != WI.WL_TITLE OR WIS.WL_URL != WI.WL_URL) AND ".
+				    "WI.WL_IS_MANUAL = FALSE AND ".
+				    "WI.IS_DELETED = FALSE ".
+				") C ".
+				"ON WI.WL_SERIES_ID = C.SERIES_ID AND ".
+				  "WI.WL_CODE = C.CODE ".
+				"SET ".
+				  "WI.WL_TITLE = C.NEW_TITLE, ".
+				  "WI.WL_URL = C.NEW_URL, ".
+				  "WI.LAST_UPDATED = CURRENT_TIMESTAMP";
+		
+		mysql_query($SQL) or die(LoggerService::error("Error updateExistingWeeklyLessons: ".mysql_error()));
+		LoggerService::info("Updated existing Weekly Lessons: ".mysql_affected_rows());		
+	}
+	
+	function deleteNonExistingWeeklyLessons(){
+		$SQL = "UPDATE WL_INDEX WI INNER JOIN ".
+			"( ".
+			  "SELECT WI.WL_SERIES_ID AS SERIES_ID, WI.WL_CODE AS CODE ".
+			  "FROM WL_INDEX WI LEFT OUTER JOIN WL_INDEX_STAGING WIS ".
+			  "ON WI.WL_SERIES_ID = WIS.WL_SERIES_ID AND ".
+			   "WI.WL_CODE = WIS.WL_CODE ".
+			  "WHERE WIS.WL_TITLE IS NULL AND ".
+			    "WIS.WL_URL IS NULL AND ".
+			    "WI.WL_IS_MANUAL = FALSE AND ".
+			    "WI.IS_DELETED = FALSE ".
+			  ") C ".
+			"ON WI.WL_SERIES_ID = C.SERIES_ID AND ".
+			  "WI.WL_CODE = C.CODE ".
+			"SET ".
+			  "WI.IS_DELETED = TRUE, ".
+			  "WI.LAST_UPDATED = CURRENT_TIMESTAMP";
+		
+		mysql_query($SQL) or die(LoggerService::error("Error deleteNonExistingWeeklyLessons: ".mysql_error()));
+		LoggerService::info("Deleted Weekly Lessons: ".mysql_affected_rows());		
 	}
 }
 ?>
