@@ -19,5 +19,9 @@ switch($view){
 		$weeklyLessonRestHandler = new WeeklyLessonRestHandler();
 		$weeklyLessonRestHandler->getAllLessons($_GET["series"]);
 		break;		
+		
+	case "" :
+		//404 - not found;
+		break;		
 }
 ?>

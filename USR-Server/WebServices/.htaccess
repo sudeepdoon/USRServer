@@ -10,3 +10,5 @@ RewriteRule ^dailyThoughts/dates/([0-9]+)/([0-9]+)/$   DailyThoughtController.ph
 
 RewriteRule ^weeklyLessons/series/$   WeeklyLessonController.php?view=series [nc,qsa]
 RewriteRule ^weeklyLessons/lessons/([0-9]+)/$   WeeklyLessonController.php?view=lessons&series=$1 [nc,qsa]
+
+RewriteRule ^schedule/$   ScheduleController.php?view=all [nc,qsa]
